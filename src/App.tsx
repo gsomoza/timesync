@@ -6,7 +6,7 @@ import { useEventListener } from "./utils/hooks/use-event-listener";
 import { setSearchTimezoneNameAtom } from "./atoms/search-timezone-name";
 import { detectAnyDOMsOnMouseEvent } from "./utils";
 import { dismissDatePickerModelAtom } from "./atoms/date";
-import { readWriteUrlTimezonesNameAtom } from "./atoms/hash-url";
+import { readWriteUrlTimezonesNameAtom, savedTimezonesWithLocalStorageAtom } from "./atoms/hash-url";
 import Navbar from "./components/NavBar";
 import { getCurrentUserTimezoneName } from "./utils/timezones";
 import Descriptions from "./components/Descriptions";
@@ -21,11 +21,19 @@ function App() {
   const [urlTimezonesName, setUrlTimezonesName] = useAtom(
     readWriteUrlTimezonesNameAtom
   );
+  const [savedTimezones] = useAtom(savedTimezonesWithLocalStorageAtom);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (!urlTimezonesName.length) {
-        setUrlTimezonesName(getCurrentUserTimezoneName());
+        // Check if there are saved timezones in local storage
+        if (savedTimezones.length > 0) {
+          // Load from local storage and update URL
+          setUrlTimezonesName(savedTimezones);
+        } else {
+          // Fall back to current user timezone
+          setUrlTimezonesName(getCurrentUserTimezoneName());
+        }
       }
     }, 500);
 

@@ -1,8 +1,14 @@
 import { atom } from "jotai";
 import { atomWithHash } from "jotai-location";
+import { atomWithStorage } from "jotai/utils";
 import { getLocalTime } from "~/utils/timezones";
 
 const urlTimezoneNamesAtom = atomWithHash<string[]>("timezones", []);
+
+export const savedTimezonesWithLocalStorageAtom = atomWithStorage<string[]>(
+  "savedTimezones",
+  []
+);
 
 export const readWriteUrlTimezonesNameAtom = atom(
   (get) => {

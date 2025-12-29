@@ -14,6 +14,7 @@ import { dialColorWithLocalStorageAtom } from "./dial-colors-model";
 import {
   deleteUrlTimezoneNameAtom,
   readWriteUrlTimezonesNameAtom,
+  savedTimezonesWithLocalStorageAtom,
 } from "./hash-url";
 import { addMinutes, format } from "date-fns";
 import { readWriteSelectedDateAtom } from "./date";
@@ -65,17 +66,25 @@ export const appendSelectedTimezonesAtom = atom(null, (get, set) => {
     });
 
     set(readWriteUrlTimezonesNameAtom, newTimezone.name);
+    
+    // Update local storage with the new list of timezones
+    const updatedTimezones = get(readWriteUrlTimezonesNameAtom);
+    set(savedTimezonesWithLocalStorageAtom, updatedTimezones);
   }
   set(searchTimezoneNameAtom, "");
 });
 
 export const deleteSelectedTimezoneAtom = atom(
   null,
-  (_, set, timezoneName: string) => {
+  (get, set, timezoneName: string) => {
     set(selectedTimezonesAtom, (preTzs) =>
       preTzs.filter(({ name }) => name !== timezoneName)
     );
     set(deleteUrlTimezoneNameAtom, timezoneName);
+    
+    // Update local storage with the new list of timezones
+    const updatedTimezones = get(readWriteUrlTimezonesNameAtom);
+    set(savedTimezonesWithLocalStorageAtom, updatedTimezones);
   }
 );
 
