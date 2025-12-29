@@ -23,12 +23,13 @@ function App() {
   );
   const [savedTimezones] = useAtom(savedTimezonesWithLocalStorageAtom);
 
+  // Check once on mount if URL has timezones parameter
   useEffect(() => {
-    // Delay to allow URL hash to be parsed before checking for empty state
-    // This ensures URL parameters take precedence over local storage
+    const hasUrlTimezones = window.location.hash.includes("timezones=");
+    
     const timeoutId = setTimeout(() => {
-      if (!urlTimezonesName.length) {
-        // Check if there are saved timezones in local storage
+      if (!urlTimezonesName.length && !hasUrlTimezones) {
+        // No URL timezones - check if there are saved timezones in local storage
         if (savedTimezones.length > 0) {
           // Load from local storage and update URL
           setUrlTimezonesName(savedTimezones);
@@ -39,9 +40,11 @@ function App() {
       }
     }, 500);
 
-    syncUrlToSelectedTimezones(urlTimezonesName);
-
     return () => clearTimeout(timeoutId);
+  }, []); // Empty dependency array - run only once on mount
+
+  useEffect(() => {
+    syncUrlToSelectedTimezones(urlTimezonesName);
   }, [urlTimezonesName]);
 
   function resetStatesOnOuterClick(e: MouseEvent) {
