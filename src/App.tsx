@@ -6,7 +6,7 @@ import { useEventListener } from "./utils/hooks/use-event-listener";
 import { setSearchTimezoneNameAtom } from "./atoms/search-timezone-name";
 import { detectAnyDOMsOnMouseEvent } from "./utils";
 import { dismissDatePickerModelAtom } from "./atoms/date";
-import { readWriteUrlTimezonesNameAtom } from "./atoms/hash-url";
+import { readWriteUrlTimezonesNameAtom, savedTimezonesWithLocalStorageAtom } from "./atoms/hash-url";
 import Navbar from "./components/NavBar";
 import { getCurrentUserTimezoneName } from "./utils/timezones";
 import Descriptions from "./components/Descriptions";
@@ -21,17 +21,30 @@ function App() {
   const [urlTimezonesName, setUrlTimezonesName] = useAtom(
     readWriteUrlTimezonesNameAtom
   );
+  const [savedTimezones] = useAtom(savedTimezonesWithLocalStorageAtom);
 
+  // Check once on mount if URL has timezones parameter
   useEffect(() => {
+    const hasUrlTimezones = window.location.hash.includes("timezones=");
+    
     const timeoutId = setTimeout(() => {
-      if (!urlTimezonesName.length) {
-        setUrlTimezonesName(getCurrentUserTimezoneName());
+      if (!urlTimezonesName.length && !hasUrlTimezones) {
+        // No URL timezones - check if there are saved timezones in local storage
+        if (savedTimezones.length > 0) {
+          // Load from local storage and update URL
+          setUrlTimezonesName(savedTimezones);
+        } else {
+          // Fall back to current user timezone
+          setUrlTimezonesName(getCurrentUserTimezoneName());
+        }
       }
     }, 500);
 
-    syncUrlToSelectedTimezones(urlTimezonesName);
-
     return () => clearTimeout(timeoutId);
+  }, []); // Empty dependency array - run only once on mount
+
+  useEffect(() => {
+    syncUrlToSelectedTimezones(urlTimezonesName);
   }, [urlTimezonesName]);
 
   function resetStatesOnOuterClick(e: MouseEvent) {
