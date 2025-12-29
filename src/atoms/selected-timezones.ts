@@ -65,10 +65,14 @@ export const appendSelectedTimezonesAtom = atom(null, (get, set) => {
       return preTzs.concat(newTimezone);
     });
 
+    // Get current URL timezones before updating
+    const currentUrlTimezones = get(readWriteUrlTimezonesNameAtom);
     set(readWriteUrlTimezonesNameAtom, newTimezone.name);
     
-    // Update local storage with the new list of timezones
-    const updatedTimezones = get(readWriteUrlTimezonesNameAtom);
+    // Build the updated list locally to avoid batching issues
+    const updatedTimezones = currentUrlTimezones.includes(newTimezone.name)
+      ? currentUrlTimezones
+      : [...currentUrlTimezones, newTimezone.name];
     set(savedTimezonesWithLocalStorageAtom, updatedTimezones);
   }
   set(searchTimezoneNameAtom, "");
@@ -80,10 +84,13 @@ export const deleteSelectedTimezoneAtom = atom(
     set(selectedTimezonesAtom, (preTzs) =>
       preTzs.filter(({ name }) => name !== timezoneName)
     );
+    
+    // Get current URL timezones before updating
+    const currentUrlTimezones = get(readWriteUrlTimezonesNameAtom);
     set(deleteUrlTimezoneNameAtom, timezoneName);
     
-    // Update local storage with the new list of timezones
-    const updatedTimezones = get(readWriteUrlTimezonesNameAtom);
+    // Build the updated list locally to avoid batching issues
+    const updatedTimezones = currentUrlTimezones.filter(name => name !== timezoneName);
     set(savedTimezonesWithLocalStorageAtom, updatedTimezones);
   }
 );
