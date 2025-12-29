@@ -12,7 +12,6 @@ import { TIMEZONES_LIMIT } from "~/constants/index";
 
 import { dialColorWithLocalStorageAtom } from "./dial-colors-model";
 import {
-  deleteUrlTimezoneNameAtom,
   readWriteUrlTimezonesNameAtom,
   savedTimezonesWithLocalStorageAtom,
 } from "./hash-url";
@@ -65,14 +64,14 @@ export const appendSelectedTimezonesAtom = atom(null, (get, set) => {
       return preTzs.concat(newTimezone);
     });
 
-    // Get current URL timezones before updating
-    const currentUrlTimezones = get(readWriteUrlTimezonesNameAtom);
-    set(readWriteUrlTimezonesNameAtom, newTimezone.name);
-    
     // Build the updated list locally to avoid batching issues
+    const currentUrlTimezones = get(readWriteUrlTimezonesNameAtom);
     const updatedTimezones = currentUrlTimezones.includes(newTimezone.name)
       ? currentUrlTimezones
       : [...currentUrlTimezones, newTimezone.name];
+    
+    // Update both URL and local storage with the same list
+    set(readWriteUrlTimezonesNameAtom, updatedTimezones);
     set(savedTimezonesWithLocalStorageAtom, updatedTimezones);
   }
   set(searchTimezoneNameAtom, "");
@@ -85,12 +84,12 @@ export const deleteSelectedTimezoneAtom = atom(
       preTzs.filter(({ name }) => name !== timezoneName)
     );
     
-    // Get current URL timezones before updating
-    const currentUrlTimezones = get(readWriteUrlTimezonesNameAtom);
-    set(deleteUrlTimezoneNameAtom, timezoneName);
-    
     // Build the updated list locally to avoid batching issues
+    const currentUrlTimezones = get(readWriteUrlTimezonesNameAtom);
     const updatedTimezones = currentUrlTimezones.filter(name => name !== timezoneName);
+    
+    // Update both URL and local storage with the same list
+    set(readWriteUrlTimezonesNameAtom, updatedTimezones);
     set(savedTimezonesWithLocalStorageAtom, updatedTimezones);
   }
 );

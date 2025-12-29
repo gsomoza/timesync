@@ -24,6 +24,8 @@ function App() {
   const [savedTimezones] = useAtom(savedTimezonesWithLocalStorageAtom);
 
   useEffect(() => {
+    // Delay to allow URL hash to be parsed before checking for empty state
+    // This ensures URL parameters take precedence over local storage
     const timeoutId = setTimeout(() => {
       if (!urlTimezonesName.length) {
         // Check if there are saved timezones in local storage
